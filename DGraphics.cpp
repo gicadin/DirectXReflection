@@ -231,14 +231,14 @@ void DGraphics::loadMeshes() {
 
 	g_pPlantInstance[0].SetXPosition(-7.0f);
 	g_pPlantInstance[0].SetYPosition(0.0f);
-	g_pPlantInstance[0].SetZPosition(2.5f);
+	g_pPlantInstance[0].SetZPosition(0.5f);
 	g_pPlantInstance[0].ScaleAbs(3.0f, 3.0f, 3.0f);
 
 	g_pPlantInstance[1].setMesh(&g_meshPlant);
 
-	g_pPlantInstance[1].SetXPosition(9.0f);
+	g_pPlantInstance[1].SetXPosition(2.0f);
 	g_pPlantInstance[1].SetYPosition(0.0f);
-	g_pPlantInstance[1].SetZPosition(4.0f);
+	g_pPlantInstance[1].SetZPosition(-6.0f);
 	g_pPlantInstance[1].ScaleAbs(3.0f, 3.0f, 3.0f);
 
 	g_meshLamp.load(g_d3ddev, "lamp.x");
@@ -267,12 +267,20 @@ void DGraphics::loadMeshes() {
 		(D3DXVECTOR3*)v,
 		g_mesh.GetMesh()->GetNumVertices(),
 		D3DXGetFVFVertexSize(g_mesh.GetMesh()->GetFVF()),
-		&g_sphere._center,
-		&g_sphere._radius);
+		&g_spheres[0]._center,
+		&g_spheres[0]._radius);
+
+	D3DXComputeBoundingSphere(
+		(D3DXVECTOR3*)v,
+		g_mesh.GetMesh()->GetNumVertices(),
+		D3DXGetFVFVertexSize(g_mesh.GetMesh()->GetFVF()),
+		&g_spheres[1]._center,
+		&g_spheres[1]._radius);
 
 	g_mesh.GetMesh()->UnlockVertexBuffer();
 
-	D3DXCreateSphere(g_d3ddev, g_sphere._radius, 20, 20, &g_msphere, 0);
+	D3DXCreateSphere(g_d3ddev, g_spheres[0]._radius, 20, 20, &g_msphere, 0);
+	D3DXCreateSphere(g_d3ddev, g_spheres[1]._radius, 20, 20, &g_msphere, 0);
 
 }
 
@@ -572,9 +580,8 @@ void DGraphics::renderMirror()
 	g_d3ddev->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
 	g_d3ddev->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
 
-	if (g_pTigerInstance->GetZPosition() < -2.5)
+	if (g_pTigerInstance[0].GetZPosition() < -2.5)
 	{
-
 		// position reflection
 		D3DXMATRIX W, translationMatrix, R, rotationMatrix;
 		D3DXPLANE plane(0.0f, 0.0f, -1.0f, 0.0f); // xy plane
@@ -606,11 +613,71 @@ void DGraphics::renderMirror()
 
 		g_d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 		g_mesh.GetMesh()->DrawSubset(0);
+	}
 
+	if (g_pTigerInstance[1].GetZPosition() < -2.5)
+	{
+		// position reflection
+		D3DXMATRIX W, translationMatrix, R, rotationMatrix;
+		D3DXPLANE plane(0.0f, 0.0f, -1.0f, 0.0f); // xy plane
+		D3DXMatrixReflect(&R, &plane);
+
+		D3DXMatrixTranslation(&translationMatrix,
+			g_pTigerInstance[1].GetXPosition(),
+			g_pTigerInstance[1].GetYPosition(),
+			g_pTigerInstance[1].GetZPosition()
+		);
+
+		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,
+			g_pTigerInstance[1].GetXRotation(),
+			g_pTigerInstance[1].GetYRotation(),
+			g_pTigerInstance[1].GetZRotation()
+		);
+
+		W = rotationMatrix * translationMatrix * R;
+
+		// clear depth buffer and blend the reflected object with the mirror
+		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+		g_d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+		g_d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+
+		// Finally, draw the reflected teapot
+		g_d3ddev->SetTransform(D3DTS_WORLD, &W);
+		g_d3ddev->SetMaterial(&g_mirrorReflectMtrl);
+		g_d3ddev->SetTexture(0, 0);
+
+		g_d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+		g_mesh.GetMesh()->DrawSubset(0);
+	}
+	{
+		// position reflection
+		D3DXMATRIX W, translationMatrix, R;
+		D3DXPLANE plane(0.0f, 0.0f, 1.0f, 0.0f); // yz plane
+		D3DXMatrixReflect(&R, &plane);
+
+		D3DXMatrixTranslation(&translationMatrix,
+			g_pPlantInstance[1].GetXPosition(),
+			g_pPlantInstance[1].GetYPosition(),
+			g_pPlantInstance[1].GetZPosition()
+		);
+
+		W = translationMatrix * R;
+
+		// clear depth buffer and blend the reflected object with the mirror
+		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+		g_d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+		g_d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+
+		// Finally, draw the reflected teapot
+		g_d3ddev->SetTransform(D3DTS_WORLD, &W);
+		g_d3ddev->SetMaterial(&g_mirrorReflectMtrl);
+		g_d3ddev->SetTexture(0, 0);
+
+		g_d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+		g_meshPlant.GetMesh()->DrawSubset(0);
+		g_meshPlant.GetMesh()->DrawSubset(1);
 	}
 	
-	
-
 	// Restore render states.
 	g_d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 	g_d3ddev->SetRenderState(D3DRS_STENCILENABLE, false);
@@ -701,7 +768,71 @@ void DGraphics::renderLeftMirror()
 		g_mesh.GetMesh()->DrawSubset(0);
 
 	}
-	
+
+	if (g_pTigerInstance[1].GetXPosition() < -2.5f)
+	{
+		// position reflection
+		D3DXMATRIX W, translationMatrix, R, rotationMatrix;
+		D3DXPLANE plane(-1.0f, 0.0f, 0.0f, 0.0f); // yz plane
+		D3DXMatrixReflect(&R, &plane);
+
+		D3DXMatrixTranslation(&translationMatrix,
+			g_pTigerInstance[1].GetXPosition(),
+			g_pTigerInstance[1].GetYPosition(),
+			g_pTigerInstance[1].GetZPosition()
+		);
+
+		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,
+			g_pTigerInstance[1].GetXRotation(),
+			g_pTigerInstance[1].GetYRotation(),
+			g_pTigerInstance[1].GetZRotation()
+		);
+
+		W = rotationMatrix * translationMatrix * R;
+
+		// clear depth buffer and blend the reflected object with the mirror
+		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+		g_d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+		g_d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+
+		// Finally, draw the reflected teapot
+		g_d3ddev->SetTransform(D3DTS_WORLD, &W);
+		g_d3ddev->SetMaterial(&g_mirrorReflectMtrl);
+		g_d3ddev->SetTexture(0, 0);
+
+		g_d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+		g_mesh.GetMesh()->DrawSubset(0);
+
+	}
+	{
+		// Plant 0
+		// position reflection
+		D3DXMATRIX W, translationMatrix, R;
+		D3DXPLANE plane(-1.0f, 0.0f, 0.0f, 0.0f); // yz plane
+		D3DXMatrixReflect(&R, &plane);
+
+		D3DXMatrixTranslation(&translationMatrix,
+			g_pPlantInstance[0].GetXPosition(),
+			g_pPlantInstance[0].GetYPosition(),
+			g_pPlantInstance[0].GetZPosition()
+		);
+
+		W = translationMatrix * R;
+
+		// clear depth buffer and blend the reflected object with the mirror
+		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+		g_d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+		g_d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+
+		// Finally, draw the reflected teapot
+		g_d3ddev->SetTransform(D3DTS_WORLD, &W);
+		g_d3ddev->SetMaterial(&g_mirrorReflectMtrl);
+		g_d3ddev->SetTexture(0, 0);
+
+		g_d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+		g_meshPlant.GetMesh()->DrawSubset(0);
+		g_meshPlant.GetMesh()->DrawSubset(1);
+	}
 
 	// Restore render states.
 	g_d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
@@ -773,6 +904,42 @@ void DGraphics::renderRightMirror()
 			g_pTigerInstance->GetXRotation(),
 			g_pTigerInstance->GetYRotation(),
 			g_pTigerInstance->GetZRotation()
+		);
+
+		W = rotationMatrix * translationMatrix * R;
+
+		// clear depth buffer and blend the reflected object with the mirror
+		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+		g_d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+		g_d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+
+		// Finally, draw the reflected teapot
+		g_d3ddev->SetTransform(D3DTS_WORLD, &W);
+		g_d3ddev->SetMaterial(&g_mirrorReflectMtrl);
+		g_d3ddev->SetTexture(0, 0);
+
+		g_d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+		g_mesh.GetMesh()->DrawSubset(0);
+
+	}
+
+	if (g_pTigerInstance[1].GetXPosition() > 2.5)
+	{
+		// position reflection
+		D3DXMATRIX W, translationMatrix, R, rotationMatrix;
+		D3DXPLANE plane(1.0f, 0.0f, 0.0f, 0.0f); // yz plane
+		D3DXMatrixReflect(&R, &plane);
+
+		D3DXMatrixTranslation(&translationMatrix,
+			g_pTigerInstance[1].GetXPosition(),
+			g_pTigerInstance[1].GetYPosition(),
+			g_pTigerInstance[1].GetZPosition()
+		);
+
+		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,
+			g_pTigerInstance[1].GetXRotation(),
+			g_pTigerInstance[1].GetYRotation(),
+			g_pTigerInstance[1].GetZRotation()
 		);
 
 		W = rotationMatrix * translationMatrix * R;
@@ -881,6 +1048,41 @@ void DGraphics::renderBackMirror()
 
 	}
 
+	if (g_pTigerInstance[1].GetZPosition() > 2.5)
+	{
+		// position reflection
+		D3DXMATRIX W, translationMatrix, R, rotationMatrix;
+		D3DXPLANE plane(0.0f, 0.0f, 1.0f, 0.0f); // yz plane
+		D3DXMatrixReflect(&R, &plane);
+
+		D3DXMatrixTranslation(&translationMatrix,
+			g_pTigerInstance[1].GetXPosition(),
+			g_pTigerInstance[1].GetYPosition(),
+			g_pTigerInstance[1].GetZPosition()
+		);
+
+		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,
+			g_pTigerInstance[1].GetXRotation(),
+			g_pTigerInstance[1].GetYRotation(),
+			g_pTigerInstance[1].GetZRotation()
+		);
+
+		W = rotationMatrix * translationMatrix * R;
+
+		// clear depth buffer and blend the reflected object with the mirror
+		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+		g_d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+		g_d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+
+		// Finally, draw the reflected teapot
+		g_d3ddev->SetTransform(D3DTS_WORLD, &W);
+		g_d3ddev->SetMaterial(&g_mirrorReflectMtrl);
+		g_d3ddev->SetTexture(0, 0);
+
+		g_d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+		g_mesh.GetMesh()->DrawSubset(0);
+
+	}
 	
 	// Restore render states.
 	g_d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
@@ -946,7 +1148,6 @@ void DGraphics::setupMirror()
 	g_d3ddev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 	g_d3ddev->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
 }
-
 
 /* Ray picking stuff beyond this point */
 DGraphics::Ray DGraphics::calcPickingRay(int x, int y)
@@ -1016,35 +1217,47 @@ bool DGraphics::raySphereIntTest(DGraphics::Ray* ray, DGraphics::BoundingSphere*
 
 void DGraphics::computeHitBox()
 {
-	D3DXMATRIX World;
-	static float r = 0.0f;
-	static float v = 1.0f;
-	static float angle = 0.0f;
-
-	D3DXMatrixTranslation(&World, g_pTigerInstance[selected_tiger].GetXPosition(),
-		g_pTigerInstance[selected_tiger].GetYPosition(),
-		g_pTigerInstance[selected_tiger].GetZPosition());
+	D3DMATERIAL9 blue = BLUE_MTRL;
+	blue.Diffuse.a = 0.0125f; // 25% opacity
+	g_d3ddev->SetMaterial(&blue);
 	
-
-	// transfrom the bounding sphere to match the teapots position in the
-	// world.
-	
-	g_sphere._center = D3DXVECTOR3(g_pTigerInstance[selected_tiger].GetXPosition(),
-		g_pTigerInstance[selected_tiger].GetYPosition(),
-		g_pTigerInstance[selected_tiger].GetZPosition());
-	
-	g_d3ddev->SetTransform(D3DTS_WORLD, &World);
-
 	// Render the bounding sphere with alpha blending so we can see 
 	// through it.
 	g_d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
 	g_d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	g_d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-	D3DMATERIAL9 blue = BLUE_MTRL;
-	blue.Diffuse.a = 0.0125f; // 25% opacity
-	g_d3ddev->SetMaterial(&blue);
+	D3DXMATRIX World;
+
+	D3DXMatrixTranslation(&World, g_pTigerInstance[0].GetXPosition(),
+		g_pTigerInstance[0].GetYPosition(),
+		g_pTigerInstance[0].GetZPosition());
+	
+	// transfrom the bounding sphere to match the teapots position in the
+	// world.
+	
+	g_spheres[0]._center = D3DXVECTOR3(g_pTigerInstance[0].GetXPosition(),
+		g_pTigerInstance[0].GetYPosition(),
+		g_pTigerInstance[0].GetZPosition());
+	
+	g_d3ddev->SetTransform(D3DTS_WORLD, &World);
+
 	g_msphere->DrawSubset(0);
+
+	D3DXMatrixTranslation(&World, g_pTigerInstance[1].GetXPosition(),
+		g_pTigerInstance[1].GetYPosition(),
+		g_pTigerInstance[1].GetZPosition());
+
+	g_spheres[1]._center = D3DXVECTOR3(g_pTigerInstance[1].GetXPosition(),
+		g_pTigerInstance[1].GetYPosition(),
+		g_pTigerInstance[1].GetZPosition());
+
+	g_d3ddev->SetTransform(D3DTS_WORLD, &World);
+
+	g_msphere->DrawSubset(0);
+
+
+	
 
 	g_d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 

@@ -68,6 +68,8 @@ public:
 	bool raySphereIntTest(DGraphics::Ray* ray, DGraphics::BoundingSphere* sphere);
 	void computeHitBox();
 
+	void setSelectedTiger(int tiger) { selected_tiger = tiger; }
+
 	void processInput(BOOL* pPressedKeys, float tmp);
 
 	LPDIRECT3DDEVICE9 getDevice() { return g_d3ddev; }
@@ -85,9 +87,6 @@ private:
 	D3DDISPLAYMODE			g_displayMode;				
 
 	IDirect3DVertexBuffer9* VB = 0;						// For drawing the scene and mirror
-	IDirect3DVertexBuffer9* VBFront = 0;						// For drawing the scene and mirror
-	IDirect3DVertexBuffer9* VBLeft = 0;					// For drawing the scene and mirror
-	IDirect3DVertexBuffer9* VBRight = 0;				// For drawing the scene and mirror
 	
 	IDirect3DTexture9*		g_mirrorTex = 0;
 	D3DMATERIAL9			g_mirrorMtrl = WHITE_MTRL;

@@ -118,10 +118,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 		graphics->transformRay(&ray, &viewInverse);
 
-		if (graphics->raySphereIntTest(&ray, &graphics->g_sphere))
+		if ( graphics->raySphereIntTest(&ray, &graphics->g_spheres[0]))
 		{
-			int count = 0;
-			count++;
+			graphics->setSelectedTiger(0);
+		}
+
+		if (graphics->raySphereIntTest(&ray, &graphics->g_spheres[1]))
+		{
+			graphics->setSelectedTiger(1);
 		}
 	} break;
 
