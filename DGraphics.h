@@ -63,6 +63,8 @@ public:
 	void renderRightMirror();
 	void renderBackMirror();
 
+	void setupParticles();
+
 	Ray calcPickingRay(int x, int y);
 	void transformRay(Ray* ray, D3DXMATRIX* T);
 	bool raySphereIntTest(DGraphics::Ray* ray, DGraphics::BoundingSphere* sphere);
@@ -101,7 +103,9 @@ private:
 
 	D3DLIGHT9				g_light;
 	D3DLIGHT9				g_pointLight, g_directionalLight, g_spotLight;
-	BOOL					ambientLight, pointLight, directionalLight, spotLight;				
+	BOOL					ambientLight, pointLight, directionalLight, spotLight;	
+
+	PSystem*				g_snow = 0;
 
 	D3DMATERIAL9			g_material;
 

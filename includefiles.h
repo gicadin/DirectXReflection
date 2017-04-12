@@ -6,6 +6,7 @@
 #include <comdef.h>
 #include <tchar.h>
 #include <stdio.h>
+#include <list>
 
 #include <d3d9.h>
 #include <d3dx9.h>
@@ -17,6 +18,7 @@
 #include "DMeshInstance.h"
 #include "InputDevice.h"
 #include "Camera.h"
+#include "PSystem.h"
 
 #include "globals.h"
 

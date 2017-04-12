@@ -156,6 +156,7 @@
     <ClCompile Include="DWorldTransform.cpp" />
     <ClCompile Include="InputDevice.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="globals.h" />
     <ClInclude Include="includefiles.h" />
     <ClInclude Include="InputDevice.h" />
+    <ClInclude Include="PSystem.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -177,6 +179,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\BookICode\Book Part II Code\Chapter 8\Stencil Mirror\ice.bmp" />
+    <Image Include="snowflake.dds" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

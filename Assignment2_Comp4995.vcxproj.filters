@@ -36,6 +36,9 @@
     <ClCompile Include="DMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -65,6 +68,9 @@
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Assignment2_Comp4995.rc">
@@ -81,6 +87,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\BookICode\Book Part II Code\Chapter 8\Stencil Mirror\ice.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="snowflake.dds">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

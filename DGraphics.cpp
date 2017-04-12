@@ -53,10 +53,11 @@ void DGraphics::init()
 	// Turn on the zbuffer
 	g_d3ddev->SetRenderState(D3DRS_ZENABLE, TRUE);
 
-
+	setupParticles();	// Do particle init
 	setupMirror();		// Do mirror initialization
 	setupCamera();		// Do camera initialization
 	setupLighting();	// Do lightning initialization
+	
 }
 
 // Initialize directX keyboard input 
@@ -86,6 +87,9 @@ void DGraphics::renderFrame()
 
 	// clear the window to a deep grey
 	g_d3ddev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, D3DCOLOR_XRGB(100, 100, 100), 1.0f, 0);
+
+
+	g_snow->update(0.001);
 
 	g_d3ddev->BeginScene();    // begins the 3D scene
 
@@ -118,6 +122,7 @@ void DGraphics::renderFrame()
 	renderLeftMirror();
 	renderRightMirror();
 	renderBackMirror();
+	g_snow->render();
 
 	g_d3ddev->EndScene();    // ends the 3D scene
 
@@ -583,8 +588,8 @@ void DGraphics::renderMirror()
 	if (g_pTigerInstance[0].GetZPosition() < -2.5)
 	{
 		// position reflection
-		D3DXMATRIX W, translationMatrix, R, rotationMatrix;
-		D3DXPLANE plane(0.0f, 0.0f, -1.0f, 0.0f); // xy plane
+		D3DXMATRIX W, translationMatrix, R, rotationMatrix, scaleMatrix;
+		D3DXPLANE plane(0.0f, 0.0f, -2.5f, 0.0f); // xy plane
 		D3DXMatrixReflect(&R, &plane);
 
 		D3DXMatrixTranslation(&translationMatrix,
@@ -593,13 +598,18 @@ void DGraphics::renderMirror()
 			g_pTigerInstance->GetZPosition()
 		);
 
+		D3DXMatrixScaling(&scaleMatrix,
+			g_pTigerInstance[0].GetXScale(),
+			g_pTigerInstance[0].GetYScale(),
+			g_pTigerInstance[0].GetZScale());
+
 		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,
 			g_pTigerInstance->GetXRotation(),
 			g_pTigerInstance->GetYRotation(),
 			g_pTigerInstance->GetZRotation()
 		);
 
-		W = rotationMatrix * translationMatrix * R;
+		W = rotationMatrix * scaleMatrix * translationMatrix * R;
 
 		// clear depth buffer and blend the reflected object with the mirror
 		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
@@ -618,7 +628,7 @@ void DGraphics::renderMirror()
 	if (g_pTigerInstance[1].GetZPosition() < -2.5)
 	{
 		// position reflection
-		D3DXMATRIX W, translationMatrix, R, rotationMatrix;
+		D3DXMATRIX W, translationMatrix, R, rotationMatrix, scaleMatrix;;
 		D3DXPLANE plane(0.0f, 0.0f, -1.0f, 0.0f); // xy plane
 		D3DXMatrixReflect(&R, &plane);
 
@@ -628,13 +638,18 @@ void DGraphics::renderMirror()
 			g_pTigerInstance[1].GetZPosition()
 		);
 
+		D3DXMatrixScaling(&scaleMatrix,
+			g_pTigerInstance[1].GetXScale(),
+			g_pTigerInstance[1].GetYScale(),
+			g_pTigerInstance[1].GetZScale());
+
 		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,
 			g_pTigerInstance[1].GetXRotation(),
 			g_pTigerInstance[1].GetYRotation(),
 			g_pTigerInstance[1].GetZRotation()
 		);
 
-		W = rotationMatrix * translationMatrix * R;
+		W = rotationMatrix * scaleMatrix * translationMatrix * R;
 
 		// clear depth buffer and blend the reflected object with the mirror
 		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
@@ -651,7 +666,7 @@ void DGraphics::renderMirror()
 	}
 	{
 		// position reflection
-		D3DXMATRIX W, translationMatrix, R;
+		D3DXMATRIX W, translationMatrix, R, scaleMatrix;
 		D3DXPLANE plane(0.0f, 0.0f, 1.0f, 0.0f); // yz plane
 		D3DXMatrixReflect(&R, &plane);
 
@@ -661,7 +676,12 @@ void DGraphics::renderMirror()
 			g_pPlantInstance[1].GetZPosition()
 		);
 
-		W = translationMatrix * R;
+		D3DXMatrixScaling(&scaleMatrix,
+			g_pPlantInstance[1].GetXScale(),
+			g_pPlantInstance[1].GetYScale(),
+			g_pPlantInstance[1].GetZScale());
+
+		W = scaleMatrix * translationMatrix * R;
 
 		// clear depth buffer and blend the reflected object with the mirror
 		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
@@ -736,7 +756,7 @@ void DGraphics::renderLeftMirror()
 	if (g_pTigerInstance->GetXPosition() < -2.5f)
 	{
 		// position reflection
-		D3DXMATRIX W, translationMatrix, R, rotationMatrix;
+		D3DXMATRIX W, translationMatrix, R, rotationMatrix, scaleMatrix;
 		D3DXPLANE plane(-1.0f, 0.0f, 0.0f, 0.0f); // yz plane
 		D3DXMatrixReflect(&R, &plane);
 
@@ -745,6 +765,11 @@ void DGraphics::renderLeftMirror()
 			g_pTigerInstance->GetYPosition(),
 			g_pTigerInstance->GetZPosition()
 		);
+
+		D3DXMatrixScaling(&scaleMatrix,
+			g_pTigerInstance[0].GetXScale(),
+			g_pTigerInstance[0].GetYScale(),
+			g_pTigerInstance[0].GetZScale());
 
 		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,
 			g_pTigerInstance->GetXRotation(),
@@ -772,7 +797,7 @@ void DGraphics::renderLeftMirror()
 	if (g_pTigerInstance[1].GetXPosition() < -2.5f)
 	{
 		// position reflection
-		D3DXMATRIX W, translationMatrix, R, rotationMatrix;
+		D3DXMATRIX W, translationMatrix, R, rotationMatrix, scaleMatrix;
 		D3DXPLANE plane(-1.0f, 0.0f, 0.0f, 0.0f); // yz plane
 		D3DXMatrixReflect(&R, &plane);
 
@@ -782,13 +807,18 @@ void DGraphics::renderLeftMirror()
 			g_pTigerInstance[1].GetZPosition()
 		);
 
+		D3DXMatrixScaling(&scaleMatrix,
+			g_pTigerInstance[1].GetXScale(),
+			g_pTigerInstance[1].GetYScale(),
+			g_pTigerInstance[1].GetZScale());
+
 		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,
 			g_pTigerInstance[1].GetXRotation(),
 			g_pTigerInstance[1].GetYRotation(),
 			g_pTigerInstance[1].GetZRotation()
 		);
 
-		W = rotationMatrix * translationMatrix * R;
+		W = rotationMatrix * scaleMatrix * translationMatrix * R;
 
 		// clear depth buffer and blend the reflected object with the mirror
 		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
@@ -807,9 +837,14 @@ void DGraphics::renderLeftMirror()
 	{
 		// Plant 0
 		// position reflection
-		D3DXMATRIX W, translationMatrix, R;
+		D3DXMATRIX W, translationMatrix, R, scaleMatrix;
 		D3DXPLANE plane(-1.0f, 0.0f, 0.0f, 0.0f); // yz plane
 		D3DXMatrixReflect(&R, &plane);
+
+		D3DXMatrixScaling(&scaleMatrix,
+			g_pPlantInstance[0].GetXScale(),
+			g_pPlantInstance[0].GetYScale(),
+			g_pPlantInstance[0].GetZScale());
 
 		D3DXMatrixTranslation(&translationMatrix,
 			g_pPlantInstance[0].GetXPosition(),
@@ -817,7 +852,7 @@ void DGraphics::renderLeftMirror()
 			g_pPlantInstance[0].GetZPosition()
 		);
 
-		W = translationMatrix * R;
+		W = scaleMatrix * translationMatrix * R;
 
 		// clear depth buffer and blend the reflected object with the mirror
 		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
@@ -890,7 +925,7 @@ void DGraphics::renderRightMirror()
 	if (g_pTigerInstance->GetXPosition() > 2.5)
 	{
 		// position reflection
-		D3DXMATRIX W, translationMatrix, R, rotationMatrix;
+		D3DXMATRIX W, translationMatrix, R, rotationMatrix, scaleMatrix;
 		D3DXPLANE plane(1.0f, 0.0f, 0.0f, 0.0f); // yz plane
 		D3DXMatrixReflect(&R, &plane);
 
@@ -900,13 +935,18 @@ void DGraphics::renderRightMirror()
 			g_pTigerInstance->GetZPosition()
 		);
 
+		D3DXMatrixScaling(&scaleMatrix,
+			g_pTigerInstance[0].GetXScale(),
+			g_pTigerInstance[0].GetYScale(),
+			g_pTigerInstance[0].GetZScale());
+
 		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,
 			g_pTigerInstance->GetXRotation(),
 			g_pTigerInstance->GetYRotation(),
 			g_pTigerInstance->GetZRotation()
 		);
 
-		W = rotationMatrix * translationMatrix * R;
+		W = rotationMatrix * scaleMatrix * translationMatrix * R;
 
 		// clear depth buffer and blend the reflected object with the mirror
 		g_d3ddev->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
@@ -926,7 +966,7 @@ void DGraphics::renderRightMirror()
 	if (g_pTigerInstance[1].GetXPosition() > 2.5)
 	{
 		// position reflection
-		D3DXMATRIX W, translationMatrix, R, rotationMatrix;
+		D3DXMATRIX W, translationMatrix, R, rotationMatrix, scaleMatrix;
 		D3DXPLANE plane(1.0f, 0.0f, 0.0f, 0.0f); // yz plane
 		D3DXMatrixReflect(&R, &plane);
 
@@ -935,6 +975,11 @@ void DGraphics::renderRightMirror()
 			g_pTigerInstance[1].GetYPosition(),
 			g_pTigerInstance[1].GetZPosition()
 		);
+
+		D3DXMatrixScaling(&scaleMatrix,
+			g_pTigerInstance[1].GetXScale(),
+			g_pTigerInstance[1].GetYScale(),
+			g_pTigerInstance[1].GetZScale());
 
 		D3DXMatrixRotationYawPitchRoll(&rotationMatrix,
 			g_pTigerInstance[1].GetXRotation(),
@@ -1256,9 +1301,6 @@ void DGraphics::computeHitBox()
 
 	g_msphere->DrawSubset(0);
 
-
-	
-
 	g_d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 
 }
@@ -1266,4 +1308,16 @@ void DGraphics::computeHitBox()
 DGraphics::BoundingSphere::BoundingSphere()
 {
 	_radius = 0.0f;
+}
+
+void DGraphics::setupParticles()
+{
+	srand((unsigned int)123);
+
+	PSystem::BoundingBox boundingBox;
+	boundingBox._min = D3DXVECTOR3(-20.0f, -5.0f, -20.0f);
+	boundingBox._max = D3DXVECTOR3(20.0f, 20.0f, 20.0f);
+
+	g_snow = new Snow(&boundingBox, 200);
+	g_snow->init(g_d3ddev, "snowflake.dds");
 }
